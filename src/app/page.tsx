@@ -1,101 +1,198 @@
-import Image from "next/image";
+"use client";
 
+import {useState} from "react";
+
+interface RequestItem {
+  ammount: number;
+  client: string;
+  createdAt: string;
+  due: string;
+  id: string;
+  invoice: string;
+  issued: string;
+  status: string;
+}
+const mockItems = [
+  {
+    createdAt: "2024-10-24T05:29:55.950Z",
+    invoice: "858f484c-5bc7-4b2d-8a9f-094238090d1a",
+    client: "Russel Group",
+    issued: "2095-12-27T10:31:36.240Z",
+    due: "2065-07-13T09:17:35.970Z",
+    ammount: 12551,
+    status: "#f2b4ec",
+    id: "1",
+  },
+  {
+    createdAt: "2024-10-23T18:38:27.162Z",
+    invoice: "d263570e-c543-4b6c-8480-81dbc873c158",
+    client: "Lindgren - Feil",
+    issued: "2038-05-05T17:30:03.279Z",
+    due: "2014-03-01T18:58:58.386Z",
+    ammount: 91673,
+    status: "#2ffa2c",
+    id: "2",
+  },
+  {
+    createdAt: "2024-10-23T21:29:51.084Z",
+    invoice: "517a88da-fe80-4bcf-b031-c9c08cafb144",
+    client: "Schamberger Inc",
+    issued: "2085-11-14T17:28:55.938Z",
+    due: "2090-07-12T21:31:51.953Z",
+    ammount: 44113,
+    status: "#9a5dca",
+    id: "3",
+  },
+  {
+    createdAt: "2024-10-23T21:35:09.271Z",
+    invoice: "6da81cf2-61f7-4ac8-af2b-d713f8f43deb",
+    client: "Leuschke - Wyman",
+    issued: "2054-05-29T23:24:35.809Z",
+    due: "2042-02-27T12:18:00.059Z",
+    ammount: 18978,
+    status: "#ce3983",
+    id: "4",
+  },
+];
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [item, setItems] = useState<RequestItem[] | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  async function getItems() {
+    const resp = await fetch("/api/items", {
+      headers: {"Content-Type": "application/json"},
+    });
+    const result = await resp.json();
+    setItems(result.items);
+    console.log(result.items);
+  }
+  function formatDateString(dateTimeString: string): string {
+    const date = new Date(dateTimeString);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  }
+  function getWeekDay(dateTimeString: string): string {
+    const date = new Date(dateTimeString);
+
+    const daysOfWeek = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+
+    const dayIndex = date.getDay(); // Returns a number from 0 (Sunday) to 6 (Saturday)
+
+    return daysOfWeek[dayIndex];
+  }
+  return (
+    <div>
+      <div className="container p-2 mx-auto sm:p-4 text-gray-100 dark:text-gray-800">
+        <h2
+          onClick={getItems}
+          className="mb-4 text-2xl font-semibold leading-tight text-white underline underline-offset-4 outline-dashed  p-4 hover:bg-slate-600 hover:cursor-pointer">
+          Invoices
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-xs">
+            <colgroup>
+              <col />
+              <col />
+              <col />
+              <col />
+              <col />
+              <col className="w-24" />
+            </colgroup>
+            <thead className="bg-gray-700 dark:bg-gray-300">
+              <tr className="text-left">
+                <th className="p-3">Invoice #</th>
+                <th className="p-3">Client</th>
+                <th className="p-3">Issued</th>
+                <th className="p-3">Due</th>
+                <th className="p-3 text-right">Amount</th>
+                <th className="p-3">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {item
+                ? item.map((item, id) => (
+                    <tr
+                      key={id}
+                      className="border-b border-opacity-20 border-gray-700 dark:border-gray-300 bg-gray-900 dark:bg-gray-50">
+                      <td className="p-3">
+                        <p>{item.invoice}</p>
+                      </td>
+                      <td className="p-3">
+                        <p>{item.client}</p>
+                      </td>
+                      <td className="p-3">
+                        <p>{formatDateString(item.issued)}</p>
+                        <p className="text-gray-400 dark:text-gray-600">
+                          {getWeekDay(item.issued)}
+                        </p>
+                      </td>
+                      <td className="p-3">
+                        <p>{formatDateString(item.due)}</p>
+                        <p className="text-gray-400 dark:text-gray-600">
+                          {getWeekDay(item.due)}
+                        </p>
+                      </td>
+                      <td className="p-3 text-right">
+                        <p>${item.ammount}</p>
+                      </td>
+                      <td className="p-3 text-right">
+                        <span
+                          style={{backgroundColor: item.status}}
+                          className={`px-3 py-1 font-semibold rounded-md  text-gray-900 dark:text-gray-50`}>
+                          <span>{item.status}</span>
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                : mockItems.map((item, id) => (
+                    <tr
+                      key={id}
+                      className="border-b border-opacity-20 border-gray-700 dark:border-gray-300 bg-gray-900 dark:bg-gray-50">
+                      <td className="p-3">
+                        <p>{item.invoice}</p>
+                      </td>
+                      <td className="p-3">
+                        <p>{item.client}</p>
+                      </td>
+                      <td className="p-3">
+                        <p>{formatDateString(item.issued)}</p>
+                        <p className="text-gray-400 dark:text-gray-600">
+                          {getWeekDay(item.issued)}
+                        </p>
+                      </td>
+                      <td className="p-3">
+                        <p>{formatDateString(item.due)}</p>
+                        <p className="text-gray-400 dark:text-gray-600">
+                          {getWeekDay(item.due)}
+                        </p>
+                      </td>
+                      <td className="p-3 text-right">
+                        <p>${item.ammount}</p>
+                      </td>
+                      <td className="p-3 text-right">
+                        <span
+                          style={{backgroundColor: item.status}}
+                          className={`px-3 py-1 font-semibold rounded-md  text-gray-900 dark:text-gray-50`}>
+                          <span>{item.status}</span>
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+            </tbody>
+          </table>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
